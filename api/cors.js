@@ -3,26 +3,36 @@ const cors_proxy = require("cors-anywhere");
 let server = null;
 
 export default async function handler(req, res) {
-    // Inicializa el servidor proxy una sola vez (cold start)
+    const targetUrl = req.query.url;
+
+    if (!targetUrl) {
+        res.status(400).json({ error: "Falta el parámetro 'url' en la query." });
+        return;
+    }
+
+    try {
+        new URL(targetUrl); // Validación básica
+    } catch (e) {
+        res.status(400).json({ error: "La URL proporcionada no es válida." });
+        return;
+    }
+
+    // Inicializar el proxy solo una vez
     if (!server) {
         server = cors_proxy.createServer({
-            originWhitelist: [], // Permite todos los orígenes
-            requireHeader: ['origin', 'x-requested-with'], // Puede quitarse si deseas
+            originWhitelist: [], // Permitir todos
+            requireHeader: [], // Podemos omitir esto para simplificar
             removeHeaders: ['cookie', 'cookie2']
         });
     }
 
-    const targetUrl = req.query.url;
+    // Reescribe la URL como espera cors-anywhere
+    req.url = '/' + targetUrl;
 
-    if (!targetUrl) {
-        res.status(400).json({ error: "Falta el parámetro `url` en la query." });
-        return;
+    // Agrega origin ficticio si no existe
+    if (!req.headers.origin) {
+        req.headers.origin = 'https://demo.local';
     }
 
-    // Modifica la request para que cors-anywhere la interprete correctamente
-    req.url = targetUrl;
-    req.headers.origin = req.headers.origin || 'https://demo.local';
-
-    // Pasa el control a cors-anywhere
     server.emit("request", req, res);
 }
