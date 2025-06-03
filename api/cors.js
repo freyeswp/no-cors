@@ -2,7 +2,7 @@ const { createServer } = require('cors-anywhere');
 
 const server = createServer({
     originWhitelist: [], // Permitir todos los orígenes
-    requireHeader: ['origin', 'x-requested-with'],
+    requireHeader: [],
     removeHeaders: ['cookie', 'cookie2']
 });
 
