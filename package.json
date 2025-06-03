@@ -1,4 +1,7 @@
 {
+  "name": "no-cors-serverless",
+  "version": "1.0.0",
+  "private": true,
   "dependencies": {
     "cors-anywhere": "^0.4.4"
   }
